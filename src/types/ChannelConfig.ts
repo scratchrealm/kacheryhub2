@@ -2,7 +2,7 @@ import { ChannelName, isArrayOf, isChannelName, isNodeId, isNumber, isString, is
 
 export type ChannelNodeConfig = {
     nodeId: NodeId
-    serviceConfigs: {[key: string]: JSONValue}
+    serviceConfigs: {[key: string]: {[key: string]: JSONValue}}
 }
 
 export const isChannelNodeConfig = (x: any): x is ChannelNodeConfig => {

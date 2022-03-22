@@ -31,7 +31,7 @@ const getChannelConfigsHandler = async (request: GetChannelConfigsRequest, verif
         }
         else {
             console.warn(x)
-            console.warn('Invalid channel congif in database')
+            console.warn('Invalid channel config in database')
             // await doc.ref.delete() // only delete if we are sure we want to -- don't risk losing data!
         }
     }

@@ -24,6 +24,7 @@ const addChannelNodeHandler = async (request: AddChannelNodeRequest, verifiedUse
         serviceConfigs: {}
     }
     channelConfig.nodes.push(channelNodeConfig)
+    channelConfig.timestampLastModified = Date.now()
     await collection.doc(channelName.toString()).set(channelConfig)
     return {
         type: 'addChannelNode'

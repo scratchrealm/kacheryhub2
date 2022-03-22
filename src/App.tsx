@@ -1,4 +1,5 @@
 import { MuiThemeProvider } from '@material-ui/core';
+import ErrorMessageSetup from 'errorMessageContext/ErrorMessageSetup';
 import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 // import logo from './logo.svg';
@@ -13,7 +14,9 @@ function App() {
       <GoogleSignInSetup>
         <MuiThemeProvider theme={theme}>
           <BrowserRouter>
-            <MainWindow />
+            <ErrorMessageSetup>
+              <MainWindow />
+            </ErrorMessageSetup>
           </BrowserRouter>
         </MuiThemeProvider>
       </GoogleSignInSetup>

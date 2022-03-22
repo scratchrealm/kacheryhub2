@@ -2,7 +2,7 @@ import axios from "axios"
 import { GuiRequest, GuiResponse } from "../types/GuiRequest"
 import { getReCaptchaToken } from "./reCaptcha"
 
-const guiApiRequest = async (request: GuiRequest, opts: {reCaptcha: boolean}): Promise<GuiResponse> => {
+const guiApiRequest = async (request: GuiRequest, opts: {reCaptcha: boolean, setErrorMessage: (msg: string) => void}): Promise<GuiResponse | undefined> => {
     let request2: GuiRequest = request
     if (opts.reCaptcha) {
         const reCaptchaToken = await getReCaptchaToken()
@@ -14,8 +14,9 @@ const guiApiRequest = async (request: GuiRequest, opts: {reCaptcha: boolean}): P
     }
     catch(err: any) {
         if (err.response) {
+            opts.setErrorMessage(err.response.data)
             console.log(err.response)
-            throw Error(err.response.data)
+            return undefined
         }
         else throw err
     }

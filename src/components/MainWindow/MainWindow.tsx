@@ -1,34 +1,55 @@
+import useErrorMessage from 'errorMessageContext/useErrorMessage';
 import React, { FunctionComponent, useCallback } from 'react';
 import ApplicationBar from '../ApplicationBar/ApplicationBar';
-import HomePage from '../HomePage/HomePage';
-import useWindowDimensions from '../misc/useWindowDimensions';
 import useRoute from '../useRoute';
+import ChannelNodePage from './ChannelNodePage';
+import ChannelPage from './ChannelPage';
+import HomePage from './HomePage';
 
 type Props = {
 
 }
 
 const MainWindow: FunctionComponent<Props> = () => {
-    const {setRoute} = useRoute()
-    const {width, height} = useWindowDimensions()
+    const {route, setRoute} = useRoute()
+    // const {width, height} = useWindowDimensions()
 
     const handleHome = useCallback(() => {
-        setRoute({routePath: '/home'})
+        setRoute({page: 'home'})
     }, [setRoute])
+
+    const {errorMessage} = useErrorMessage()
 
     return (
         <div>
             <div>
-            <ApplicationBar
-                title={"kacheryhub2"}
-                onHome={handleHome}
-                logo={undefined}
-            />
+                <ApplicationBar
+                    title={"kacheryhub2"}
+                    onHome={handleHome}
+                    logo={undefined}
+                />
             </div>
-            <HomePage
-                width={width}
-                height={height - 50}
-            />
+            <div style={{margin: 20}}>
+                {
+                    errorMessage ? (
+                        <span style={{color: 'red'}}>{errorMessage}</span>
+                    ) : <span />
+                }
+                {
+                    route.page === 'home' ? (
+                        <HomePage />
+                    ) : route.page === 'channel' ? (
+                        <ChannelPage
+                            channelName={route.channelName}
+                        />
+                    ) : route.page === 'channelNode' ? (
+                        <ChannelNodePage
+                            channelName={route.channelName}
+                            nodeId={route.nodeId}
+                        />
+                    ) : <span />
+                }
+            </div>
         </div>
     )
 }

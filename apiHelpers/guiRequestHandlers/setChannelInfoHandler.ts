@@ -22,6 +22,7 @@ const setChannelInfoHandler = async (request: SetChannelInfoRequest, verifiedUse
     if (googleCredentials !== undefined) {
         channelConfig.googleCredentials = googleCredentials
     }
+    channelConfig.timestampLastModified = Date.now()
     await collection.doc(channelName.toString()).set(channelConfig)
     return {
         type: 'setChannelInfo'

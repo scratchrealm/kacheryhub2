@@ -40,7 +40,7 @@ const ApplicationBar: FunctionComponent<Props> = ({ title, logo, onHome }) => {
     }, [gapi])
     const handleLogout = useCallback(() => {
         gapi.auth2.getAuthInstance().signOut()
-        setRoute({routePath: '/home'})
+        setRoute({page: 'home'})
     }, [gapi, setRoute])
 
     return (
