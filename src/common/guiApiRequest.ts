@@ -3,6 +3,7 @@ import { GuiRequest, GuiResponse } from "../types/GuiRequest"
 import { getReCaptchaToken } from "./reCaptcha"
 
 const guiApiRequest = async (request: GuiRequest, opts: {reCaptcha: boolean, setErrorMessage: (msg: string) => void}): Promise<GuiResponse | undefined> => {
+    opts.setErrorMessage('')
     let request2: GuiRequest = request
     if (opts.reCaptcha) {
         const reCaptchaToken = await getReCaptchaToken()

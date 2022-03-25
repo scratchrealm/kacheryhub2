@@ -5,6 +5,7 @@ import useRoute from '../useRoute';
 import ChannelNodePage from './ChannelNodePage';
 import ChannelPage from './ChannelPage';
 import HomePage from './HomePage';
+import NodePage from './NodePage';
 
 type Props = {
 
@@ -45,6 +46,10 @@ const MainWindow: FunctionComponent<Props> = () => {
                     ) : route.page === 'channelNode' ? (
                         <ChannelNodePage
                             channelName={route.channelName}
+                            nodeId={route.nodeId}
+                        />
+                    ) : route.page === 'node' ? (
+                        <NodePage
                             nodeId={route.nodeId}
                         />
                     ) : <span />

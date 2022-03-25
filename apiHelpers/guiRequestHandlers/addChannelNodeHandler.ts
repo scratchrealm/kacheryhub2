@@ -1,5 +1,6 @@
 import { UserId } from "../../src/commonInterface/kacheryTypes";
-import { ChannelNodeConfig, isChannelConfig } from "../../src/types/ChannelConfig";
+import { isChannel } from "../../src/types/Channel";
+import { ChannelNode } from "../../src/types/ChannelNode";
 import { AddChannelNodeRequest, AddChannelNodeResponse } from "../../src/types/GuiRequest";
 import firestoreDatabase from '../common/firestoreDatabase';
 
@@ -7,25 +8,41 @@ const addChannelNodeHandler = async (request: AddChannelNodeRequest, verifiedUse
     const { channelName, nodeId } = request
 
     const db = firestoreDatabase()
-    const collection = db.collection('kacheryhub.channelConfigs')
-    const docSnapshot = await collection.doc(channelName.toString()).get()
-    if (!docSnapshot.exists) {
-        throw Error('Channel does not exists')
+
+    const channelsCollection = db.collection('kacheryhub.channels')
+    const channelDocSnapshot = await channelsCollection.doc(channelName.toString()).get()
+    if (!channelDocSnapshot.exists) {
+        throw Error('Channel node does not exist.')
     }
-    const channelConfig = docSnapshot.data()
-    if (!isChannelConfig(channelConfig)) {
-        throw Error('Invalid channel config')
+    const channel = channelDocSnapshot.data()
+    if (!isChannel(channel)) {
+        throw Error('Invalid channel')
     }
-    if (channelConfig.nodes.map(n => (n.nodeId)).includes(nodeId)) {
-        throw Error('Channel already includes node as member')
+    if (channel.ownerId !== verifiedUserId) {
+        throw Error('Not authorized')
     }
-    const channelNodeConfig: ChannelNodeConfig = {
+
+    const nodesCollection = db.collection('kacheryhub.nodes')
+    const nodeDocSnapshot = await nodesCollection.doc(nodeId.toString()).get()
+    if (!nodeDocSnapshot.exists) {
+        throw Error('Node does not exist or has not been verified.')
+    }
+
+    const collection = db.collection('kacheryhub.channelNodes')
+    const docSnapshot = await collection.doc(channelName.toString() + '.' + nodeId.toString()).get()
+    if (docSnapshot.exists) {
+        throw Error('Channel node already exists')
+    }
+    
+    const channelNode: ChannelNode = {
+        channelName,
         nodeId,
-        serviceConfigs: {}
+        permissions: {
+            read: true,
+            write: false
+        }
     }
-    channelConfig.nodes.push(channelNodeConfig)
-    channelConfig.timestampLastModified = Date.now()
-    await collection.doc(channelName.toString()).set(channelConfig)
+    await collection.doc(channelName.toString() + '.' + nodeId.toString()).set(channelNode)
     return {
         type: 'addChannelNode'
     }

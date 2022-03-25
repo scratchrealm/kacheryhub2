@@ -5,11 +5,14 @@ import addChannelHandler from '../apiHelpers/guiRequestHandlers/addChannelHandle
 import addChannelNodeHandler from '../apiHelpers/guiRequestHandlers/addChannelNodeHandler'
 import deleteChannelHandler from '../apiHelpers/guiRequestHandlers/deleteChannelHandler'
 import deleteChannelNodeHandler from '../apiHelpers/guiRequestHandlers/deleteChannelNodeHandler'
-import getChannelConfigsHandler from '../apiHelpers/guiRequestHandlers/getChannelConfigsHandler'
-import setChannelInfoHandler from '../apiHelpers/guiRequestHandlers/setChannelInfoHandler'
-import setChannelNodeServiceConfigHandler from '../apiHelpers/guiRequestHandlers/setChannelNodeServiceConfigHandler'
+import deleteNodeHandler from '../apiHelpers/guiRequestHandlers/deleteNodeHandler'
+import getChannelsHandler from '../apiHelpers/guiRequestHandlers/getChannelsHandler'
+import getNodesHandler from '../apiHelpers/guiRequestHandlers/getNodesHandler'
+import addNodeHandler from '../apiHelpers/guiRequestHandlers/addNodeHandler'
+import setChannelSettingsHandler from '../apiHelpers/guiRequestHandlers/setChannelSettingsHandler'
 import { UserId } from '../src/commonInterface/kacheryTypes'
 import { isGuiRequest } from '../src/types/GuiRequest'
+import getChannelNodesHandler from '../apiHelpers/guiRequestHandlers/getChannelNodesHandler'
 
 const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY
 
@@ -42,7 +45,7 @@ module.exports = (req: VercelRequest, res: VercelResponse) => {
     if ((userId) && (!googleIdToken)) throw Error('No google id token')
 
     ;(async () => {
-        const verifiedUserId = userId ? await googleVerifyIdToken(userId, googleIdToken) as any as UserId : undefined
+        const verifiedUserId = userId ? await googleVerifyIdToken(userId.toString(), googleIdToken) as any as UserId : undefined
         const verifiedReCaptchaInfo: VerifiedReCaptchaInfo | undefined = await verifyReCaptcha(reCaptchaToken)
         if (verifiedReCaptchaInfo) {
             if (!verifiedReCaptchaInfo.success) {
@@ -57,6 +60,10 @@ module.exports = (req: VercelRequest, res: VercelResponse) => {
                 throw Error('ReCaptcha required')
             }
             return await addChannelHandler(request, verifiedUserId)
+        }
+        else if (request.type === 'getChannelNodes') {
+            // no recaptcha required
+            return await getChannelNodesHandler(request, verifiedUserId)
         }
         else if (request.type === 'addChannelNode') {
             if (!verifiedReCaptchaInfo) {
@@ -76,21 +83,31 @@ module.exports = (req: VercelRequest, res: VercelResponse) => {
             }
             return await deleteChannelNodeHandler(request, verifiedUserId)
         }
-        else if (request.type === 'getChannelConfigs') {
+        else if (request.type === 'getChannels') {
             // no recaptcha required
-            return await getChannelConfigsHandler(request, verifiedUserId)
+            return await getChannelsHandler(request, verifiedUserId)
         }
-        else if (request.type === 'setChannelInfo') {
+        else if (request.type === 'setChannelSettings') {
             if (!verifiedReCaptchaInfo) {
                 throw Error('ReCaptcha required')
             }
-            return await setChannelInfoHandler(request, verifiedUserId)
+            return await setChannelSettingsHandler(request, verifiedUserId)
         }
-        else if (request.type === 'setChannelNodeServiceConfig') {
+        else if (request.type === 'addNode') {
             if (!verifiedReCaptchaInfo) {
                 throw Error('ReCaptcha required')
             }
-            return await setChannelNodeServiceConfigHandler(request, verifiedUserId)
+            return await addNodeHandler(request, verifiedUserId)
+        }
+        else if (request.type === 'deleteNode') {
+            if (!verifiedReCaptchaInfo) {
+                throw Error('ReCaptcha required')
+            }
+            return await deleteNodeHandler(request, verifiedUserId)
+        }
+        else if (request.type === 'getNodes') {
+            // no recaptcha required
+            return await getNodesHandler(request, verifiedUserId)
         }
         else {
             throw Error(`Unexpected request type: ${request.type}`)

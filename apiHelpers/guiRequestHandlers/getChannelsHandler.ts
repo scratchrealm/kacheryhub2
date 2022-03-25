@@ -1,11 +1,11 @@
 import { UserId } from "../../src/commonInterface/kacheryTypes";
-import { ChannelConfig, isChannelConfig } from "../../src/types/ChannelConfig";
-import { GetChannelConfigsRequest, GetChannelConfigsResponse } from "../../src/types/GuiRequest";
+import { Channel, isChannel } from "../../src/types/Channel";
+import { GetChannelsRequest, GetChannelsResponse } from "../../src/types/GuiRequest";
 import firestoreDatabase from '../common/firestoreDatabase';
 import isAdminUser from "./helpers/isAdminUser";
-import hideSecretsInChannelConfig from './helpers/hideSecretsInChannelConfig'
+import hideSecretsInChannel from './helpers/hideSecretsInChannel'
 
-const getChannelConfigsHandler = async (request: GetChannelConfigsRequest, verifiedUserId: UserId): Promise<GetChannelConfigsResponse> => {
+const getChannelsHandler = async (request: GetChannelsRequest, verifiedUserId: UserId): Promise<GetChannelsResponse> => {
     const { userId } = request
     if (!userId) {
         if (!isAdminUser(verifiedUserId)) {
@@ -17,28 +17,29 @@ const getChannelConfigsHandler = async (request: GetChannelConfigsRequest, verif
     }
 
     const db = firestoreDatabase()
-    const collection = db.collection('kacheryhub.channelConfigs')
+    const collection = db.collection('kacheryhub.channels')
     const results = userId ?
         await collection.where('ownerId', '==', userId).get() :
         await collection.get()
-    const channelConfigs: ChannelConfig[] = []
+    const channels: Channel[] = []
     for (let doc of results.docs) {
         const x = doc.data()
-        if (isChannelConfig(x)) {
-            channelConfigs.push(
-                hideSecretsInChannelConfig(x)
-            )
+        if (isChannel(x)) {
+            channels.push(x)
         }
         else {
             console.warn(x)
-            console.warn('Invalid channel config in database')
+            console.warn('Invalid channel in database')
             // await doc.ref.delete() // only delete if we are sure we want to -- don't risk losing data!
         }
     }
+    for (let channel of channels) {
+        hideSecretsInChannel(channel)
+    }
     return {
-        type: 'getChannelConfigs',
-        channelConfigs
+        type: 'getChannels',
+        channels
     }
 }
 
-export default getChannelConfigsHandler
+export default getChannelsHandler

@@ -1,5 +1,5 @@
 import { UserId } from "../../src/commonInterface/kacheryTypes";
-import { ChannelConfig } from "../../src/types/ChannelConfig";
+import { Channel } from "../../src/types/Channel";
 import { AddChannelRequest, AddChannelResponse } from "../../src/types/GuiRequest";
 import firestoreDatabase from '../common/firestoreDatabase';
 
@@ -12,7 +12,7 @@ const addChannelHandler = async (request: AddChannelRequest, verifiedUserId: Use
     }
 
     const db = firestoreDatabase()
-    const collection = db.collection('kacheryhub.channelConfigs')
+    const collection = db.collection('kacheryhub.channels')
     const docSnapshot = await collection.doc(channelName.toString()).get()
     if (docSnapshot.exists) {
         throw Error('Channel already exists')
@@ -21,16 +21,14 @@ const addChannelHandler = async (request: AddChannelRequest, verifiedUserId: Use
     if (results.docs.length >= MAX_NUM_CHANNELS_PER_USER) {
         throw Error(`User cannot own more than ${MAX_NUM_CHANNELS_PER_USER} channels`)
     }
-    const channelConfig: ChannelConfig = {
+    const channel: Channel = {
         channelName,
         ownerId,
-        googleCredentials: '',
-        bucketName: '',
         timestampCreated: Date.now(),
         timestampLastModified: Date.now(),
-        nodes: []
+        settings: {}
     }
-    await collection.doc(channelName.toString()).set(channelConfig)
+    await collection.doc(channelName.toString()).set(channel)
     return {
         type: 'addChannel'
     }

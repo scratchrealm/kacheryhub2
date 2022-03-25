@@ -3,10 +3,9 @@ import Hyperlink from 'commonComponents/Hyperlink/Hyperlink';
 import { ChannelName, NodeId } from 'commonInterface/kacheryTypes';
 import useRoute from 'components/useRoute';
 import React, { FunctionComponent, useMemo } from 'react';
-import channelNodeServiceConfigSpecs from './channelNodeServiceConfigSpecs';
-import ChannelNodeServiceConfigsView from './ChannelNodeServiceConfigsView';
-import EditableChannelNodeServiceConfig from './EditableChannelNodeServiceConfig';
-import useChannelConfigs from './useChannelConfigs';
+import { ChannelNode } from 'types/ChannelNode';
+import ChannelNodePermissionsView from './ChannelNodePermissionsView';
+import useChannelNodes from './useChannelNodes';
 
 type Props = {
     channelName: ChannelName
@@ -14,46 +13,46 @@ type Props = {
 }
 
 const ChannelNodePage: FunctionComponent<Props> = ({channelName, nodeId}) => {
-    const { channelConfigs, setChannelNodeServiceConfig } = useChannelConfigs()
+    const { channelNodes } = useChannelNodes()
     const { setRoute } = useRoute()
 
-    const channelConfig = useMemo(() => (
-        (channelConfigs || []).filter(channelConfig => (channelConfig.channelName === channelName))[0]
-    ), [channelConfigs, channelName])
-
-    const channelNodeConfig = useMemo(() => (
-        channelConfig ? channelConfig.nodes.filter(n => (n.nodeId === nodeId))[0] : undefined
-    ), [channelConfig, nodeId])
+    const channelNode: ChannelNode | undefined = useMemo(() => (
+        channelNodes ? channelNodes.filter(n => (n.channelName === channelName) && (n.nodeId === nodeId))[0] : undefined
+    ), [channelNodes, channelName, nodeId])
 
     const tableData = useMemo(() => {
-        if (!channelConfig) return undefined
-        if (!channelNodeConfig) return undefined
+        if (!channelNode) return undefined
         return [
-            { key: 'channelName', label: 'Channel', value: <Hyperlink onClick={() => {setRoute({page: 'channel', channelName: channelConfig.channelName})}}>{channelConfig.channelName.toString()}</Hyperlink> },
-            { key: 'nodeId', label: 'Node', value: channelNodeConfig.nodeId },
             {
-                key: 'serviceConfigs',
-                label: 'Service configs',
-                value: <ChannelNodeServiceConfigsView channelNodeConfig={channelNodeConfig} />
+                key: 'channelName',
+                label: 'Channel',
+                value: <Hyperlink onClick={() => {setRoute({page: 'channel', channelName: channelNode.channelName})}}>{channelNode.channelName.toString()}</Hyperlink>
+            },
+            {
+                key: 'nodeId',
+                label: 'Node',
+                value: <Hyperlink onClick={() => {setRoute({page: 'node', nodeId: channelNode.nodeId})}}>{channelNode.nodeId.toString()}</Hyperlink>
+            },
+            {
+                key: 'permissions',
+                label: 'Permissions',
+                value: <ChannelNodePermissionsView channelNode={channelNode} />
             }
         ]
-    }, [channelConfig, channelNodeConfig, setRoute])
+    }, [channelNode, setRoute])
 
-    if (!channelConfigs) {
+    if (!channelNodes) {
         return <span>Loading...</span>
     }
 
-    if (!channelConfig) {
-        return <span>Channel not found: {channelName}</span>
-    }
-
-    if (!channelNodeConfig) {
+    if (!channelNode) {
         return <span>Channel node not found: {channelName} {nodeId}</span>
     }
 
     if (!tableData) return <div />
     return (
         <div>
+            <h3>Channel node</h3>
             <Table className="NiceTable2">
                 <TableBody>
                     {
@@ -66,19 +65,6 @@ const ChannelNodePage: FunctionComponent<Props> = ({channelName, nodeId}) => {
                     }
                 </TableBody>
             </Table>
-            {
-                channelNodeServiceConfigSpecs.map(spec => (
-                    <div>
-                        <h3>{spec.serviceName}</h3>
-                        <EditableChannelNodeServiceConfig
-                            channelName={channelName}
-                            channelNodeConfig={channelNodeConfig}
-                            serviceName={spec.serviceName}
-                            setChannelNodeServiceConfig={setChannelNodeServiceConfig}
-                        />
-                    </div>
-                ))
-            }
         </div>
     )
 }

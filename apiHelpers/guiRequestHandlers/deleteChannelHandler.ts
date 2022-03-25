@@ -1,5 +1,5 @@
 import { UserId } from "../../src/commonInterface/kacheryTypes";
-import { isChannelConfig } from "../../src/types/ChannelConfig";
+import { isChannel } from "../../src/types/Channel";
 import { DeleteChannelRequest, DeleteChannelResponse } from "../../src/types/GuiRequest";
 import firestoreDatabase from '../common/firestoreDatabase';
 
@@ -7,19 +7,31 @@ const deleteChannelHandler = async (request: DeleteChannelRequest, verifiedUserI
     const { channelName } = request
 
     const db = firestoreDatabase()
-    const collection = db.collection('kacheryhub.channelConfigs')
+
+    const batch = db.batch();
+
+    const channelNodesCollection = db.collection('kacheryhub.channelNodes')
+    const channelNodesSnapshot = await channelNodesCollection.where('channelName', '==', channelName).get()
+    channelNodesSnapshot.forEach(doc => {
+        batch.delete(doc.ref)
+    })
+
+    const collection = db.collection('kacheryhub.channels')
     const docSnapshot = await collection.doc(channelName.toString()).get()
     if (!docSnapshot.exists) {
         throw Error('Channel does not exists')
     }
-    const channelConfig = docSnapshot.data()
-    if (!isChannelConfig(channelConfig)) {
-        throw Error('Invalid channel config')
+    const channel = docSnapshot.data()
+    if (!isChannel(channel)) {
+        throw Error('Invalid channel')
     }
-    if (channelConfig.ownerId !== verifiedUserId) {
+    if (channel.ownerId !== verifiedUserId) {
         throw Error('Not authorized')
     }
-    await collection.doc(channelName.toString()).delete()
+    batch.delete(collection.doc(channelName.toString()))
+    
+    await batch.commit()
+    
     return {
         type: 'deleteChannel'
     }

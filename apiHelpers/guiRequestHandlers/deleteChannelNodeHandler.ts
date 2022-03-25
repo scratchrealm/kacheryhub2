@@ -1,5 +1,5 @@
 import { UserId } from "../../src/commonInterface/kacheryTypes";
-import { isChannelConfig } from "../../src/types/ChannelConfig";
+import { isChannel } from "../../src/types/Channel";
 import { DeleteChannelNodeRequest, DeleteChannelNodeResponse } from "../../src/types/GuiRequest";
 import firestoreDatabase from '../common/firestoreDatabase';
 
@@ -7,20 +7,26 @@ const deleteChannelNodeHandler = async (request: DeleteChannelNodeRequest, verif
     const { channelName, nodeId } = request
 
     const db = firestoreDatabase()
-    const collection = db.collection('kacheryhub.channelConfigs')
-    const docSnapshot = await collection.doc(channelName.toString()).get()
+
+    const channelsCollection = db.collection('kacheryhub.channels')
+    const channelDocSnapshot = await channelsCollection.doc(channelName.toString()).get()
+    if (!channelDocSnapshot.exists) {
+        throw Error('Channel node does not exists')
+    }
+    const channel = channelDocSnapshot.data()
+    if (!isChannel(channel)) {
+        throw Error('Invalid channel')
+    }
+    if (channel.ownerId !== verifiedUserId) {
+        throw Error('Not authorized')
+    }
+
+    const collection = db.collection('kacheryhub.channelNodes')
+    const docSnapshot = await collection.doc(channelName.toString() + '.' + nodeId.toString()).get()
     if (!docSnapshot.exists) {
-        throw Error('Channel does not exists')
+        throw Error('Channel node does not exists')
     }
-    const channelConfig = docSnapshot.data()
-    if (!isChannelConfig(channelConfig)) {
-        throw Error('Invalid channel config')
-    }
-    if (!channelConfig.nodes.map(n => (n.nodeId)).includes(nodeId)) {
-        throw Error('Channel does not include node as member')
-    }
-    channelConfig.nodes = channelConfig.nodes.filter(n => (n.nodeId !== nodeId))
-    await collection.doc(channelName.toString()).set(channelConfig)
+    await collection.doc(channelName.toString() + '.' + nodeId.toString()).delete()
     return {
         type: 'deleteChannelNode'
     }

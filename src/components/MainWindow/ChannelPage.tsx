@@ -4,79 +4,84 @@ import { ChannelName } from 'commonInterface/kacheryTypes';
 import useRoute from 'components/useRoute';
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import ChannelNodesTable from './ChannelNodesTable';
-import EditableTextField from './EditableTextField';
-import useChannelConfigs from './useChannelConfigs';
+import ChannelSettingsView from './ChannelSettingsView';
+import useChannelNodes from './useChannelNodes';
+import useChannels from './useChannels';
 
 type Props = {
     channelName: ChannelName
 }
 
 const ChannelPage: FunctionComponent<Props> = ({channelName}) => {
-    const { channelConfigs, addChannelNode, deleteChannelNode, setChannelInfo } = useChannelConfigs()
+    const { channels, setChannelSettings } = useChannels()
+    const { channelNodes, addChannelNode, deleteChannelNode } = useChannelNodes()
     const { setRoute } = useRoute()
 
-    const channelConfig = useMemo(() => (
-        (channelConfigs || []).filter(channelConfig => (channelConfig.channelName === channelName))[0]
-    ), [channelConfigs, channelName])
+    const channel = useMemo(() => (
+        (channels || []).filter(channel => (channel.channelName === channelName))[0]
+    ), [channels, channelName])
 
-    const handleChangeBucketName = useCallback((bucketName: string) => {
-        setChannelInfo({channelName, bucketName})
-    }, [channelName, setChannelInfo])
-
-    const handleChangeGoogleCredentials = useCallback((googleCredentials: string) => {
-        setChannelInfo({channelName, googleCredentials})
-    }, [channelName, setChannelInfo])
+    const channelNodesForChannel = useMemo(() => (
+        channel ? (
+            (channelNodes || []).filter(cn => (cn.channelName === channel.channelName))
+        ) : undefined
+    ), [channelNodes, channel])
 
     const tableData = useMemo(() => {
-        if (!channelConfig) return undefined
+        if (!channel) return undefined
         return [
-            { key: 'channelName', label: 'Channel', value: channelConfig.channelName.toString() },
-            { key: 'ownerId', label: 'Owner', value: channelConfig.ownerId.toString() },
-            { 
-                key: 'bucketName',
-                label: 'Bucket',
-                value: <EditableTextField value={channelConfig.bucketName || ''} onChange={handleChangeBucketName} tooltip="Edit bucket name" />
-            },
-            { 
-                key: 'googleCredentials',
-                label: 'Google credentials',
-                value: <EditableTextField value={channelConfig.googleCredentials ? '****************' : ''} onChange={handleChangeGoogleCredentials} tooltip="Edit Google credentials" />
-            },
-            { key: 'timestampCreated', label: 'Created', value: `${new Date(channelConfig.timestampCreated)}` },
-            { key: 'timestampLastModified', label: 'Modified', value: `${new Date(channelConfig.timestampLastModified)}` }
+            { key: 'channelName', label: 'Channel', value: channel.channelName.toString() },
+            { key: 'ownerId', label: 'Owner', value: channel.ownerId.toString() },
+            { key: 'timestampCreated', label: 'Created', value: `${new Date(channel.timestampCreated)}` },
+            { key: 'timestampLastModified', label: 'Modified', value: `${new Date(channel.timestampLastModified)}` }
         ]
-    }, [channelConfig, handleChangeBucketName, handleChangeGoogleCredentials])
+    }, [channel])
 
     const handleBack = useCallback(() => {
         setRoute({page: 'home'})
     }, [setRoute])
 
-    if (!channelConfigs) {
+    if (!channels) {
         return <span>Loading...</span>
     }
 
-    if (!channelConfig) {
-        return <span>Channel not found: {channelName}</span>
+    if (!channelNodes) {
+        return <span>Loading...</span>
     }
+
+    if (!channel) {
+        return <span>channel not found: {channelName}</span>
+    }
+
+    if (!channelNodesForChannel) {
+        return <span>Unexpected, no channelNodesForChannel</span>
+    }
+
 
     if (!tableData) return <div />
     return (
         <div>
-            <Hyperlink onClick={handleBack}>Back to all channels</Hyperlink>
+            <Hyperlink onClick={handleBack}>Back</Hyperlink>
             <Table className="NiceTable2">
                 <TableBody>
                     {
                         tableData.map(x => (
                             <TableRow key={x.key}>
                                 <TableCell>{x.label}: </TableCell>
-                                <TableCell>{x.value}</TableCell>
+                                <TableCell style={{wordBreak: 'break-word'}}>{x.value}</TableCell>
                             </TableRow>
                         ))
                     }
                 </TableBody>
             </Table>
+            <ChannelSettingsView
+                channelName={channel.channelName}
+                channelSettings={channel.settings}
+                setChannelSettings={setChannelSettings}
+            />
             <ChannelNodesTable
-                channelConfig={channelConfig}
+                channelName={channel.channelName}
+                channelNodes={channelNodes}
                 addChannelNode={addChannelNode}
                 deleteChannelNode={deleteChannelNode}
             />

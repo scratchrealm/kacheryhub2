@@ -1,33 +1,35 @@
-import { ChannelName, isArrayOf, isChannelName, isEqualTo, isJSONValue, isNodeId, isOneOf, isString, isUserId, JSONValue, NodeId, optional, UserId, _validateObject } from "../commonInterface/kacheryTypes"
+import { ChannelName, isArrayOf, isChannelName, isEqualTo, isNodeId, isOneOf, isString, isUserId, NodeId, optional, UserId, _validateObject } from "../commonInterface/kacheryTypes"
 import { Auth, isAuth } from "./Auth"
-import { ChannelConfig, isChannelConfig } from "./ChannelConfig"
+import { Channel, ChannelSettings, isChannel, isChannelSettings } from "./Channel"
+import { ChannelNode, ChannelNodePermissions, isChannelNode, isChannelNodePermissions } from "./ChannelNode"
+import { isNode, Node } from "./Node"
 
 //////////////////////////////////////////////////////////////////////////////////
-// getChannelConfigs
+// getChannels
 
-export type GetChannelConfigsRequest = {
-    type: 'getChannelConfigs'
+export type GetChannelsRequest = {
+    type: 'getChannels'
     userId?: UserId
     auth: Auth
 }
 
-export const isGetChannelConfigsRequest = (x: any): x is GetChannelConfigsRequest => {
+export const isGetChannelsRequest = (x: any): x is GetChannelsRequest => {
     return _validateObject(x, {
-        type: isEqualTo('getChannelConfigs'),
+        type: isEqualTo('getChannels'),
         userId: optional(isUserId),
         auth: isAuth
     })
 }
 
-export type GetChannelConfigsResponse = {
-    type: 'getChannelConfigs'
-    channelConfigs: ChannelConfig[]
+export type GetChannelsResponse = {
+    type: 'getChannels'
+    channels: Channel[]
 }
 
-export const isGetChannelConfigsResponse = (x: any): x is GetChannelConfigsResponse => {
+export const isGetChannelsResponse = (x: any): x is GetChannelsResponse => {
     return _validateObject(x, {
-        type: isEqualTo('getChannelConfigs'),
-        channelConfigs: isArrayOf(isChannelConfig)
+        type: isEqualTo('getChannels'),
+        channels: isArrayOf(isChannel)
     })
 }
 
@@ -88,33 +90,60 @@ export const isDeleteChannelResponse = (x: any): x is DeleteChannelResponse => {
 }
 
 //////////////////////////////////////////////////////////////////////////////////
-// setChannelInfo
+// setChannelSettings
 
-export type SetChannelInfoRequest = {
-    type: 'setChannelInfo'
+export type SetChannelSettingsRequest = {
+    type: 'setChannelSettings'
     channelName: ChannelName
-    bucketName?: string
-    googleCredentials?: string
+    channelSettings: ChannelSettings
     auth: Auth
 }
 
-export const isSetChannelInfoRequest = (x: any): x is SetChannelInfoRequest => {
+export const isSetChannelSettingsRequest = (x: any): x is SetChannelSettingsRequest => {
     return _validateObject(x, {
-        type: isEqualTo('setChannelInfo'),
+        type: isEqualTo('setChannelSettings'),
         channelName: isChannelName,
-        bucketName: optional(isString),
-        googleCredentials: optional(isString),
+        channelSettings: isChannelSettings,
         auth: isAuth
     })
 }
 
-export type SetChannelInfoResponse = {
-    type: 'setChannelInfo'
+export type SetChannelSettingsResponse = {
+    type: 'setChannelSettings'
 }
 
-export const isSetChannelInfoResponse = (x: any): x is SetChannelInfoResponse => {
+export const isSetChannelSettingsResponse = (x: any): x is SetChannelSettingsResponse => {
     return _validateObject(x, {
-        type: isEqualTo('setChannelInfo')
+        type: isEqualTo('setChannelSettings')
+    })
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+// getChannelNodes
+
+export type GetChannelNodesRequest = {
+    type: 'getChannelNodes'
+    userId?: UserId
+    auth: Auth
+}
+
+export const isGetChannelNodesRequest = (x: any): x is GetChannelNodesRequest => {
+    return _validateObject(x, {
+        type: isEqualTo('getChannelNodes'),
+        userId: optional(isUserId),
+        auth: isAuth
+    })
+}
+
+export type GetChannelNodesResponse = {
+    type: 'getChannelNodes'
+    channelNodes: ChannelNode[]
+}
+
+export const isGetChannelNodesResponse = (x: any): x is GetChannelNodesResponse => {
+    return _validateObject(x, {
+        type: isEqualTo('getChannelNodes'),
+        channelNodes: isArrayOf(isChannelNode)
     })
 }
 
@@ -177,79 +206,181 @@ export const isDeleteChannelNodeResponse = (x: any): x is DeleteChannelNodeRespo
 }
 
 //////////////////////////////////////////////////////////////////////////////////
-// setChannelNodeServiceConfig
+// setChannelNodePermissions
 
-export type SetChannelNodeServiceConfigRequest = {
-    type: 'setChannelNodeServiceConfig'
+export type SetChannelNodePermissionsRequest = {
+    type: 'setChannelNodePermissions'
     channelName: ChannelName
     nodeId: NodeId
-    serviceName: string
-    serviceConfig: JSONValue
+    channelNodePermissions: ChannelNodePermissions
     auth: Auth
 }
 
-export const isSetChannelNodeServiceConfigRequest = (x: any): x is SetChannelNodeServiceConfigRequest => {
+export const isSetChannelNodePermissionsRequest = (x: any): x is SetChannelNodePermissionsRequest => {
     return _validateObject(x, {
-        type: isEqualTo('setChannelNodeServiceConfig'),
+        type: isEqualTo('setChannelNodePermissions'),
         channelName: isChannelName,
         nodeId: isNodeId,
-        serviceName: isString,
-        serviceConfig: isJSONValue,
+        channelNodePermissions: isChannelNodePermissions,
         auth: isAuth
     })
 }
 
-export type SetChannelNodeServiceConfigResponse = {
-    type: 'setChannelNodeServiceConfig'
+export type SetChannelNodePermissionsResponse = {
+    type: 'setChannelNodePermissions'
 }
 
-export const isSetChannelNodeServiceConfigResponse = (x: any): x is SetChannelNodeServiceConfigResponse => {
+export const isSetChannelNodePermissionsResponse = (x: any): x is SetChannelNodePermissionsResponse => {
     return _validateObject(x, {
-        type: isEqualTo('setChannelNodeServiceConfig')
+        type: isEqualTo('setChannelNodePermissions')
     })
 }
 
+//////////////////////////////////////////////////////////////////////////////////
+// addNode
+
+export type AddNodeRequest = {
+    type: 'addNode'
+    nodeId: NodeId
+    label: string
+    ownerId: UserId
+    auth: Auth
+}
+
+export const isAddNodeRequest = (x: any): x is AddNodeRequest => {
+    return _validateObject(x, {
+        type: isEqualTo('addNode'),
+        nodeId: isNodeId,
+        label: isString,
+        ownerId: isUserId,
+        auth: isAuth
+    })
+}
+
+export type AddNodeResponse = {
+    type: 'addNode'
+}
+
+export const isAddNodeResponse = (x: any): x is AddNodeResponse => {
+    return _validateObject(x, {
+        type: isEqualTo('addNode')
+    })
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+// deleteNode
+
+export type DeleteNodeRequest = {
+    type: 'deleteNode'
+    nodeId: NodeId
+    ownerId: UserId
+    auth: Auth
+}
+
+export const isDeleteNodeRequest = (x: any): x is DeleteNodeRequest => {
+    return _validateObject(x, {
+        type: isEqualTo('deleteNode'),
+        nodeId: isNodeId,
+        ownerId: isUserId,
+        auth: isAuth
+    })
+}
+
+export type DeleteNodeResponse = {
+    type: 'deleteNode'
+}
+
+export const isDeleteNodeResponse = (x: any): x is DeleteNodeResponse => {
+    return _validateObject(x, {
+        type: isEqualTo('deleteNode')
+    })
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+// getNodes
+
+export type GetNodesRequest = {
+    type: 'getNodes'
+    userId?: UserId
+    auth: Auth
+}
+
+export const isGetNodesRequest = (x: any): x is GetNodesRequest => {
+    return _validateObject(x, {
+        type: isEqualTo('getNodes'),
+        userId: optional(isUserId),
+        auth: isAuth
+    })
+}
+
+export type GetNodesResponse = {
+    type: 'getNodes'
+    nodes: Node[]
+}
+
+export const isGetNodesResponse = (x: any): x is GetNodesResponse => {
+    return _validateObject(x, {
+        type: isEqualTo('getNodes'),
+        nodes: isArrayOf(isNode)
+    })
+}
 
 //////////////////////////////////////////////////////////////////////////////////
 
 export type GuiRequest =
-    GetChannelConfigsRequest |
+    GetChannelsRequest |
     AddChannelRequest |
     DeleteChannelRequest |
-    SetChannelInfoRequest |
+    SetChannelSettingsRequest |
+    GetChannelNodesRequest |
     AddChannelNodeRequest |
     DeleteChannelNodeRequest |
-    SetChannelNodeServiceConfigRequest
+    SetChannelNodePermissionsRequest |
+    AddNodeRequest |
+    DeleteNodeRequest |
+    GetNodesRequest
 
 export const isGuiRequest = (x: any): x is GuiRequest => {
     return isOneOf([
-        isGetChannelConfigsRequest,
+        isGetChannelsRequest,
         isAddChannelRequest,
         isDeleteChannelRequest,
-        isSetChannelInfoRequest,
+        isSetChannelSettingsRequest,
+        isGetChannelNodesRequest,
         isAddChannelNodeRequest,
         isDeleteChannelNodeRequest,
-        isSetChannelNodeServiceConfigRequest
+        isSetChannelNodePermissionsRequest,
+        isAddNodeRequest,
+        isDeleteNodeRequest,
+        isGetNodesRequest
     ])(x)
 }
 
 export type GuiResponse =
-    GetChannelConfigsResponse |
+    GetChannelsResponse |
     AddChannelResponse |
     DeleteChannelResponse |
-    SetChannelInfoResponse |
+    SetChannelSettingsResponse |
+    GetChannelNodesResponse |
     AddChannelNodeResponse |
     DeleteChannelNodeResponse |
-    SetChannelNodeServiceConfigResponse
+    SetChannelNodePermissionsResponse |
+    AddNodeResponse |
+    DeleteNodeResponse |
+    GetNodesResponse
 
 export const isGuiResponse = (x: any): x is GuiResponse => {
     return isOneOf([
-        isGetChannelConfigsResponse,
+        isGetChannelsResponse,
         isAddChannelResponse,
         isDeleteChannelResponse,
-        isSetChannelInfoResponse,
+        isSetChannelSettingsResponse,
+        isGetChannelNodesResponse,
         isAddChannelNodeResponse,
         isDeleteChannelNodeResponse,
-        isSetChannelNodeServiceConfigResponse
+        isSetChannelNodePermissionsResponse,
+        isAddNodeResponse,
+        isDeleteNodeResponse,
+        isGetNodesResponse
     ])(x)
 }

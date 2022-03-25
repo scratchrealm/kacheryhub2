@@ -6,60 +6,61 @@ import useVisible from 'commonComponents/useVisible';
 import { ChannelName, isNodeId, NodeId } from 'commonInterface/kacheryTypes';
 import useRoute from 'components/useRoute';
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
-import { ChannelConfig } from 'types/ChannelConfig';
+import { ChannelNode } from 'types/ChannelNode';
 import AddChannelNodeControl from './AddChannelNodeControl';
-import ChannelNodeServiceConfigsView from './ChannelNodeServiceConfigsView';
+import ChannelNodePermissionsView from './ChannelNodePermissionsView';
 
 type Props = {
-    channelConfig: ChannelConfig
+    channelName: ChannelName
+    channelNodes: ChannelNode[]
     addChannelNode: (channelName: ChannelName, nodeId: NodeId) => void
     deleteChannelNode: (channelName: ChannelName, nodeId: NodeId) => void
 }
 
-const ChannelNodesTable: FunctionComponent<Props> = ({channelConfig, addChannelNode, deleteChannelNode}) => {
+const ChannelNodesTable: FunctionComponent<Props> = ({channelName, channelNodes, addChannelNode, deleteChannelNode}) => {
     const addVisible = useVisible()
     const { setRoute } = useRoute()
 
     const columns = useMemo(() => ([
         {
             key: 'nodeId',
-            label: 'Node'
+            label: 'Channel node'
         },
         {
-            key: 'serviceConfigs',
-            label: 'Service configs'
+            key: 'permissions',
+            label: 'Permissions'
         }
     ]), [])
 
     const rows = useMemo(() => (
-        (channelConfig.nodes || []).map((channelNodeConfig) => ({
-            key: channelNodeConfig.nodeId.toString(),
+        channelNodes.map((channelNode) => ({
+            key: channelNode.nodeId.toString(),
             columnValues: {
                 nodeId: {
-                    text: channelNodeConfig.nodeId,
-                    element: <Hyperlink onClick={() => {setRoute({page: 'channelNode', channelName: channelConfig.channelName, nodeId: channelNodeConfig.nodeId})}}>{channelNodeConfig.nodeId}</Hyperlink>
+                    text: channelNode.nodeId,
+                    element: <Hyperlink onClick={() => {setRoute({page: 'channelNode', channelName: channelNode.channelName, nodeId: channelNode.nodeId})}}>{channelNode.nodeId}</Hyperlink>
                 },
-                serviceConfigs: {
+                permissions: {
                     text: '',
-                    element: <ChannelNodeServiceConfigsView channelNodeConfig={channelNodeConfig} />
+                    element: <ChannelNodePermissionsView channelNode={channelNode} />
                 }
             }
         }))
-    ), [channelConfig, setRoute])
+    ), [channelNodes, setRoute])
 
     const handleDeleteChannelNode = useCallback((nodeId: string) => {
         if (!isNodeId(nodeId)) return
-        deleteChannelNode(channelConfig.channelName, nodeId)
-    }, [channelConfig, deleteChannelNode])
+        deleteChannelNode(channelName, nodeId)
+    }, [channelName, deleteChannelNode])
 
     return (
         <div>
             <h3>Channel nodes</h3>
-            <IconButton onClick={addVisible.show} title="Add channel"><AddCircle /></IconButton>
+            <IconButton onClick={addVisible.show} title="Add channel node"><AddCircle /></IconButton>
             {
                 addVisible.visible && (
                     <AddChannelNodeControl
-                        channelName={channelConfig.channelName}
+                        channelName={channelName}
                         onAdd={addChannelNode}
                         onClose={addVisible.hide}
                     />

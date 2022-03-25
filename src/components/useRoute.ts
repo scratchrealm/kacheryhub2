@@ -12,6 +12,9 @@ export type Route = {
     page: 'channelNode',
     channelName: ChannelName,
     nodeId: NodeId
+} | {
+    page: 'node'
+    nodeId: NodeId
 }
 
 const useRoute = () => {
@@ -37,6 +40,15 @@ const useRoute = () => {
             }
         }
     }
+    else if (p.startsWith('/node')) {
+        const x = p.split('/')
+        if (x.length === 3) {
+            route = {
+                page: 'node',
+                nodeId: x[2] as any as NodeId
+            }
+        }
+    }
 
     const setRoute = useCallback((route: Route) => {
         const query2 = {...query}
@@ -46,6 +58,9 @@ const useRoute = () => {
         }
         else if (route.page === 'channelNode') {
             pathname2 = `/channel/${route.channelName}/node/${route.nodeId}`
+        }
+        else if (route.page === 'node') {
+            pathname2 = `/node/${route.nodeId}`
         }
         const search2 = queryString(query2)
         history.push({...location, pathname: pathname2, search: search2})

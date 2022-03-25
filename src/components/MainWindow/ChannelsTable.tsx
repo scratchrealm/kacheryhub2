@@ -7,7 +7,8 @@ import { isChannelName } from 'commonInterface/kacheryTypes';
 import useRoute from 'components/useRoute';
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import AddChannelControl from './AddChannelControl';
-import useChannelConfigs from './useChannelConfigs';
+import useChannelNodes from './useChannelNodes';
+import useChannels from './useChannels';
 
 type Props = {
 }
@@ -17,7 +18,8 @@ const ChannelsTable: FunctionComponent<Props> = () => {
 
     const {setRoute} = useRoute()
 
-    const { channelConfigs, refreshChannelConfigs, addChannel, deleteChannel } = useChannelConfigs()
+    const { channels, refreshChannels, addChannel, deleteChannel } = useChannels()
+    const { channelNodes } = useChannelNodes()
 
     const columns = useMemo(() => ([
         {
@@ -27,14 +29,6 @@ const ChannelsTable: FunctionComponent<Props> = () => {
         {
             key: 'ownerId',
             label: 'Owner'
-        },
-        {
-            key: 'bucketName',
-            label: 'Bucket'
-        },
-        {
-            key: 'googleCredentials',
-            label: 'Google credentials'
         },
         {
             key: 'timestampCreated',
@@ -51,36 +45,34 @@ const ChannelsTable: FunctionComponent<Props> = () => {
     ]), [])
 
     const rows = useMemo(() => (
-        (channelConfigs || []).map((channelConfig) => ({
-            key: channelConfig.channelName.toString(),
+        (channels || []).map((channel) => ({
+            key: channel.channelName.toString(),
             columnValues: {
                 channelName: {
-                    text: channelConfig.channelName.toString(),
-                    element: <Hyperlink onClick={() => {setRoute({page: 'channel', channelName: channelConfig.channelName})}}>{channelConfig.channelName}</Hyperlink>
+                    text: channel.channelName.toString(),
+                    element: <Hyperlink onClick={() => {setRoute({page: 'channel', channelName: channel.channelName})}}>{channel.channelName}</Hyperlink>
                 },
-                ownerId: channelConfig.ownerId.toString(),
-                bucketName: channelConfig.bucketName,
-                googleCredentials: channelConfig.googleCredentials ? '**********' : '',
-                timestampCreated: timeSince(channelConfig.timestampCreated),
-                timestampLastModified: timeSince(channelConfig.timestampLastModified),
-                numNodes: `${channelConfig.nodes.length}`
+                ownerId: channel.ownerId.toString(),
+                timestampCreated: timeSince(channel.timestampCreated),
+                timestampLastModified: timeSince(channel.timestampLastModified),
+                numNodes: `${(channelNodes || []).filter(cn => (cn.channelName === channel.channelName)).length}`
             }
         }))
-    ), [channelConfigs, setRoute])
+    ), [channels, channelNodes, setRoute])
 
     const handleDeleteChannel = useCallback((channelName: string) => {
         if (!isChannelName(channelName)) return
         deleteChannel(channelName)
     }, [deleteChannel])
 
-    if (!channelConfigs) {
+    if (!channels) {
         return <span>Loading channels...</span>
     }
 
     return (
         <div>
             <h3>Channels</h3>
-            <IconButton onClick={refreshChannelConfigs} title="Refresh channels"><Refresh /></IconButton>
+            <IconButton onClick={refreshChannels} title="Refresh channels"><Refresh /></IconButton>
             <IconButton onClick={addVisible.show} title="Add channel"><AddCircle /></IconButton>
             {
                 addVisible.visible && (

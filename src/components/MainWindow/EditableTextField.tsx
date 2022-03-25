@@ -1,19 +1,20 @@
-import { Button, IconButton } from '@material-ui/core';
-import { Edit } from '@material-ui/icons';
+import { Button } from '@material-ui/core';
+import Hyperlink from 'commonComponents/Hyperlink/Hyperlink';
 import React, { FunctionComponent, useCallback, useEffect, useState } from 'react';
 
 type Props = {
     value: string
+    clearOnEdit?: boolean
     onChange: (x: string) => void
     tooltip?: string
 }
 
-const EditableTextField: FunctionComponent<Props> = ({value, onChange, tooltip}) => {
+const EditableTextField: FunctionComponent<Props> = ({value, clearOnEdit, onChange, tooltip}) => {
     const [editing, setEditing] = useState<boolean>(false)
     if (editing) {
         return (
             <TextInput
-                value={value}
+                value={clearOnEdit ? '' : value}
                 onChange={(x) => {
                     onChange(x)
                     setEditing(false)
@@ -26,10 +27,8 @@ const EditableTextField: FunctionComponent<Props> = ({value, onChange, tooltip})
         return (
             <span>
                 {value}
-                <EditButton
-                    title={tooltip || ''}
-                    onClick={() => setEditing(true)}
-                />
+                &nbsp;&nbsp;&nbsp;
+                <Hyperlink onClick={() => setEditing(true)}>edit</Hyperlink>
             </span>
         )
     }
@@ -52,18 +51,6 @@ const TextInput: FunctionComponent<{value: string, onChange: (x: string) => void
             <Button onClick={handleSubmit}>Submit</Button>
             <Button onClick={onCancel}>Cancel</Button>
         </div>
-    )
-}
-
-
-const EditButton: FunctionComponent<{title: string, onClick: () => void}> = ({title, onClick}) => {
-    return (
-        <IconButton
-            title={title}
-            onClick={onClick}
-        >
-            <Edit />
-        </IconButton>
     )
 }
 

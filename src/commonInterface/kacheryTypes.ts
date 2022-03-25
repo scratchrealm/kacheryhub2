@@ -908,11 +908,11 @@ export const isFileManifest = (x: any): x is FileManifest => {
     })
 }
 
-// ChannelConfigUrl
-export interface ChannelConfigUrl extends String {
-    __channelConfigUrl__: never
+// ChannelUrl
+export interface ChannelUrl extends String {
+    __channelUrl__: never
 }
-export const isChannelConfigUrl = (x: any): x is ChannelConfigUrl => {
+export const isChannelUrl = (x: any): x is ChannelUrl => {
     if (!isString(x)) return false;
     if ((x.startsWith('http://') || (x.startsWith('https://')))) {
         if (x.length > 500) return false
@@ -922,8 +922,8 @@ export const isChannelConfigUrl = (x: any): x is ChannelConfigUrl => {
         return false
     }
 }
-export const channelConfigUrl = (x: string): ChannelConfigUrl => {
-    if (!isChannelConfigUrl(x)) throw Error(`Not a valid channel config url string: ${x}`)
+export const channelUrl = (x: string): ChannelUrl => {
+    if (!isChannelUrl(x)) throw Error(`Not a valid channel config url string: ${x}`)
     return x
 }
 
